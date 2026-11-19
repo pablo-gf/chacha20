@@ -1,0 +1,61 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch: # Allow manual triggering
+
+jobs:
+  # Correctness: RFC 8439 test vectors for every implementation,
+  # plus the cross encryption/decryption test.
+  test-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build all implementations
+        run: make
+      - name: Run tests
+        run: make test
+
+  # Performance: the original Windows clock-cycle benchmark,
+  # now run once per implementation in parallel.
+  benchmark-windows:
+    needs: test-linux
+    if: github.event_name != 'pull_request'
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        impl: [scalar, v128, v256]
+    defaults:
+      run:
+        working-directory: ${{ matrix.impl }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install MinGW
+        run: choco install mingw -y
+
+      - name: Add MinGW to PATH
+        shell: bash
+        run: echo "C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin" >> "$GITHUB_PATH"
+
+      - name: Verify MinGW
+        run: |
+          gcc --version
+          mingw32-make --version
+
+      - name: Build
+        run: mingw32-make
+
+      - name: Run clock-cycle benchmark
+        shell: cmd
+        run: ..\common\clock_cycles_tests.bat
+
+      - name: Upload CSV artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: results-${{ matrix.impl }}
+          path: ${{ matrix.impl }}/generated_results.csv

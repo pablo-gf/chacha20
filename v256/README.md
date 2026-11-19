@@ -61,15 +61,15 @@ This implementation of ChaCha20 has been optimized for performance and includes 
 To measure the **cycles per byte**, use the provided automation scripts:
 
 #### Windows
-Run the `clock_cycles_tests.bat` script:
+From this folder, run the shared `common/clock_cycles_tests.bat` script:
 ```bash
-clock_cycles_tests.bat
+..\common\clock_cycles_tests.bat
 ```
 
 ### Linux
-Run the `clock_cycles_tests.sh` script:
+From this folder, run the shared `common/clock_cycles_tests.sh` script (or `make bench V=v256` from the repo root):
 ```bash
-clock_cycles_tests.sh
+../common/clock_cycles_tests.sh
 ```
 These scripts perform automated benchmarking of the ChaCha20 implementation, similar to how benchmarks are conducted for cryptographic algorithms at [ECRYPT](https://bench.cr.yp.to/results-stream/amd64-panther.html). The average and median results in cycles per byte are as follows:
 

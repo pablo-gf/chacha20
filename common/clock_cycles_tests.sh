@@ -4,6 +4,7 @@
 runs=100
 
 csv_file="generated_results.csv"
+echo "Test,Run,Clock Cycles" > $csv_file
 
 echo "Initializing CSV file: $csv_file"
 

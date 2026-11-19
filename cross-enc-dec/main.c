@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <string.h>
-#include "headers/chacha20_functions.h"
-#include "headers/chacha20_functions_v128.h"
-#include "headers/chacha20_functions_v256.h"
+#include "chacha20_functions.h"       /* ../scalar */
+#include "chacha20_functions_v128.h"  /* ../v128 */
+#include "chacha20_functions_v256.h"  /* ../v256 */
 
 /*
 
@@ -22,9 +22,9 @@ void print_usage() {
 
 int main(int argc, char *argv[]) {
 
-    char ciphertext[1024];
-    char decrypted1[1024];
-    char decrypted2[1024];
+    char ciphertext[1024] = {0};
+    char decrypted1[1024] = {0};
+    char decrypted2[1024] = {0};
 
     uint32_t state1[16];
     uint32_t state2[16];
@@ -65,7 +65,9 @@ int main(int argc, char *argv[]) {
     int chacha128_encrypts_test = 0;
     int chacha256_encrypts_test = 0;
 
-    if (strcmp(argv[1], "--enc-chacha") == 0) {
+    unsigned long len = strlen(plaintext);
+
+    if (argc < 2 || strcmp(argv[1], "--enc-chacha") == 0) {
         chacha_encrypts_test = 1;
 
     } else if (strcmp(argv[1], "--enc-chacha128") == 0) {
@@ -85,7 +87,7 @@ int main(int argc, char *argv[]) {
 
     if (chacha_encrypts_test)
     {
-        encrypt(state1, "expand 32-byte k", key, blockcount, nonce, plaintext, ciphertext);
+        encrypt(state1, "expand 32-byte k", key, blockcount, nonce, plaintext, ciphertext, len);
         printf("\n - Encrypted with chacha20:\n ");
         for (int i = 0; i < strlen(plaintext); i++) {
             printf("%02x", (unsigned char)ciphertext[i]);
@@ -93,11 +95,11 @@ int main(int argc, char *argv[]) {
         printf("\n");
         
         // Decrypt using chacha20-128-vec
-        decrypt_v128(state1, "expand 32-byte k", key, blockcount, nonce, v0_1, v1_1, v2_1, v3_1, decrypted1, ciphertext);
+        decrypt_v128(state1, "expand 32-byte k", key, blockcount, nonce, v0_1, v1_1, v2_1, v3_1, decrypted1, ciphertext, len);
         printf("\n - Decrypted with 128-bit vectorized chacha20:\n %s\n", decrypted1);
 
         // Decrypt using chacha20-256-vec
-        decrypt_v256(state1, state2, "expand 32-byte k", key, blockcount, nonce, v0_2, v1_2, v2_2, v3_2, decrypted2, ciphertext);
+        decrypt_v256(state1, state2, "expand 32-byte k", key, blockcount, nonce, v0_2, v1_2, v2_2, v3_2, decrypted2, ciphertext, len);
         printf("\n - Decrypted with 256-bit vectorized chacha20:\n %s\n", decrypted2);
 
         // Check results
@@ -110,17 +112,17 @@ int main(int argc, char *argv[]) {
 
     if (chacha128_encrypts_test)
     {       
-        encrypt_v128(state1, "expand 32-byte k", key, blockcount, nonce, v0_1, v1_1, v2_1, v3_1, plaintext, ciphertext);
+        encrypt_v128(state1, "expand 32-byte k", key, blockcount, nonce, v0_1, v1_1, v2_1, v3_1, plaintext, ciphertext, len);
         printf("\n - Encrypted with 128-bit vectorized chacha20:\n ");
         for (int i = 0; i < strlen(plaintext); i++) {
             printf("%02x", (unsigned char)ciphertext[i]);
         }
         printf("\n");
         
-        decrypt(state1, "expand 32-byte k", key, blockcount, nonce, decrypted1, ciphertext);
+        decrypt(state1, "expand 32-byte k", key, blockcount, nonce, decrypted1, ciphertext, len);
         printf("\n - Decrypted with chacha20:\n %s\n", decrypted1);
 
-        decrypt_v256(state1, state2, "expand 32-byte k", key, blockcount, nonce, v0_2, v1_2, v2_2, v3_2, decrypted2, ciphertext);
+        decrypt_v256(state1, state2, "expand 32-byte k", key, blockcount, nonce, v0_2, v1_2, v2_2, v3_2, decrypted2, ciphertext, len);
         printf("\n - Decrypted with 256-bit vectorized chacha20:\n %s\n", decrypted2);
 
         if (strcmp(plaintext, decrypted1) == 0 && strcmp(plaintext, decrypted2) == 0) {
@@ -132,17 +134,17 @@ int main(int argc, char *argv[]) {
 
     if (chacha256_encrypts_test)
     {
-        encrypt_v256(state1, state2, "expand 32-byte k", key, blockcount, nonce, v0_2, v1_2, v2_2, v3_2, plaintext, ciphertext);
+        encrypt_v256(state1, state2, "expand 32-byte k", key, blockcount, nonce, v0_2, v1_2, v2_2, v3_2, plaintext, ciphertext, len);
         printf("\n - Encrypted with 256-bit vectorized chacha20):\n ");
         for (int i = 0; i < strlen(plaintext); i++) {
             printf("%02x", (unsigned char)ciphertext[i]);
         }
         printf("\n");
         
-        decrypt(state1, "expand 32-byte k", key, blockcount, nonce, decrypted1, ciphertext);
+        decrypt(state1, "expand 32-byte k", key, blockcount, nonce, decrypted1, ciphertext, len);
         printf("\n - Decrypted with chacha20:\n %s\n", decrypted1);
 
-        decrypt_v128(state1, "expand 32-byte k", key, blockcount, nonce, v0_1, v1_1, v2_1, v3_1, decrypted2, ciphertext);
+        decrypt_v128(state1, "expand 32-byte k", key, blockcount, nonce, v0_1, v1_1, v2_1, v3_1, decrypted2, ciphertext, len);
         printf("\n - Decrypted with 128-bit vectorized chacha20:\n %s\n", decrypted2);
 
         if (strcmp(plaintext, decrypted1) == 0 && strcmp(plaintext, decrypted2) == 0) {
