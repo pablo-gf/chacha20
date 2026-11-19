@@ -8,19 +8,20 @@ on:
   workflow_dispatch: # Allow manual triggering
 
 jobs:
-  # Correctness: RFC 8439 test vectors for every implementation,
-  # plus the cross encryption/decryption test.
+  # Correctness: RFC 8439 vectors for each implementation + cross test,
+  # also under AddressSanitizer/UBSan to catch memory errors.
   test-linux:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Build all implementations
-        run: make
-      - name: Run tests
+      - name: Build and test
         run: make test
+      - name: Build and test with sanitizers
+        run: |
+          make clean
+          make test CFLAGS="-O1 -g -march=native -fsanitize=address,undefined -fno-sanitize-recover=all" LDFLAGS="-fsanitize=address,undefined"
 
-  # Performance: the original Windows clock-cycle benchmark,
-  # now run once per implementation in parallel.
+  # Performance: clock-cycle benchmark on Windows for each implementation.
   benchmark-windows:
     needs: test-linux
     if: github.event_name != 'pull_request'
@@ -29,33 +30,18 @@ jobs:
       fail-fast: false
       matrix:
         impl: [scalar, v128, v256]
-    defaults:
-      run:
-        working-directory: ${{ matrix.impl }}
     steps:
       - uses: actions/checkout@v4
-
-      - name: Install MinGW
-        run: choco install mingw -y
-
-      - name: Add MinGW to PATH
+      - name: Build
         shell: bash
-        run: echo "C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin" >> "$GITHUB_PATH"
-
-      - name: Verify MinGW
         run: |
           gcc --version
-          mingw32-make --version
-
-      - name: Build
-        run: mingw32-make
-
+          mingw32-make build/chacha20-${{ matrix.impl }}.exe
       - name: Run clock-cycle benchmark
         shell: cmd
-        run: ..\common\clock_cycles_tests.bat
-
+        run: bench\clock_cycles_tests.bat build\chacha20-${{ matrix.impl }}.exe generated_results.csv 100
       - name: Upload CSV artifact
         uses: actions/upload-artifact@v4
         with:
           name: results-${{ matrix.impl }}
-          path: ${{ matrix.impl }}/generated_results.csv
+          path: generated_results.csv

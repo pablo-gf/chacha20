@@ -1,8 +1,4 @@
+build/
 *.o
 *.exe
-scalar/chacha20
-v128/chacha20
-v256/chacha20
-cross-enc-dec/chacha20-crossed-enc-dec
-cross-enc-dec/build/
 generated_results.csv
