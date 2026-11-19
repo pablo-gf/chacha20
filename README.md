@@ -30,4 +30,4 @@ Requires `gcc` and an x86-64 CPU (`v256` needs AVX2). On Windows, use MinGW (`mi
 
 ## History
 
-This repo merges four repos that used to be separate: `chacha20`, `chacha20-128-vec`, `chacha20-256-vec` and `chacha20-cross-enc-dec`. They were imported with `git subtree`, so every original commit is kept. The older commits still use the original file paths (from before the move into subfolders), so use `git log --graph` to browse them rather than filtering by folder.
+The 128-bit, 256-bit and cross enc/dec versions used to live in their own repos (`chacha20-128-vec`, `chacha20-256-vec`, `chacha20-cross-enc-dec`). They are now merged into this one, and the separate repos have been retired. They were imported with `git subtree`, so every original commit is kept. The older commits still use the original file paths (from before the move into subfolders), so use `git log --graph` to browse them rather than filtering by folder.
