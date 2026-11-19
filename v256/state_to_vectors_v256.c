@@ -3,7 +3,7 @@
 
 // This function generates 4 vectors from the concatenation of the states' rows with the same index
 
-void state_to_vectors_v256(uint32_t state1[16], uint32_t state2[16], uint32_t v0[4], uint32_t v1[4], uint32_t v2[4], uint32_t v3[4])
+void state_to_vectors_v256(uint32_t state1[16], uint32_t state2[16], uint32_t v0[8], uint32_t v1[8], uint32_t v2[8], uint32_t v3[8])
 {
     // Assign each elements from the first state to their position within the first vector
     for (int i = 0; i < 4; i++)

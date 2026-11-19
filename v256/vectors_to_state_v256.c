@@ -5,7 +5,7 @@
 // This function separates each vector into a lower (beginning) and higher (end) part,
 // Then assigns each part to their correct position within each corresponding state
 
-void vectors_to_state_v256(uint32_t state1[16], uint32_t state2[2], __m256i v0, __m256i v1, __m256i v2, __m256i v3)
+void vectors_to_state_v256(uint32_t state1[16], uint32_t state2[16], __m256i v0, __m256i v1, __m256i v2, __m256i v3)
 {
     // Break down each vector in half
     __m128i v0_low = _mm256_extracti128_si256(v0, 0);
