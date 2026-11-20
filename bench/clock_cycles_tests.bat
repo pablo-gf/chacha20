@@ -14,14 +14,21 @@ if "%csv_file%"=="" set csv_file=generated_results.csv
 set runs=%~3
 if "%runs%"=="" set runs=100
 
+set out_file=%TEMP%\chacha20_bench_%RANDOM%.txt
+
 echo Test,Run,Clock Cycles> "%csv_file%"
 for /L %%t in (1,1,5) do (
     for /L %%r in (1,1,%runs%) do (
         set clock_cycles=
-        for /F "tokens=5" %%c in ('"%bin%" --clock-ct %%t ^| findstr /C:"Clock cycles per byte"') do set clock_cycles=%%c
+        rem Write the output to a file first: putting a quoted path inside
+        rem for /F's command makes cmd strip the wrong quotes.
+        call "%bin%" --clock-ct %%t > "%out_file%"
+        for /F "tokens=5" %%c in ('findstr /C:"Clock cycles per byte" "%out_file%"') do set clock_cycles=%%c
+        if "!clock_cycles!"=="" echo Warning: no clock cycles for test %%t, run %%r
         echo %%t,%%r,!clock_cycles!>> "%csv_file%"
     )
     echo Test %%t: %runs% runs done
 )
+del "%out_file%" 2>nul
 echo Results written to %csv_file%
 endlocal
