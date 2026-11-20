@@ -13,7 +13,7 @@ jobs:
   test-linux:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Build and test
         run: make test
       - name: Build and test with sanitizers
@@ -31,7 +31,7 @@ jobs:
       matrix:
         impl: [scalar, v128, v256]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Build
         shell: bash
         run: |
@@ -40,8 +40,20 @@ jobs:
       - name: Run clock-cycle benchmark
         shell: cmd
         run: bench\clock_cycles_tests.bat build\chacha20-${{ matrix.impl }}.exe generated_results.csv 100
+      - name: Check benchmark results
+        shell: bash
+        run: |
+          # Expect exactly 500 rows of "test,run,<number>" (CRLF allowed):
+          # catches a crash, a failed parse or an empty value.
+          total=$(tail -n +2 generated_results.csv | wc -l)
+          bad=$(tail -n +2 generated_results.csv | grep -cvE '^[1-5],[0-9]+,[0-9]+(\.[0-9]+)?[[:space:]]*$' || true)
+          echo "rows: $total, invalid: $bad"
+          head -5 generated_results.csv
+          [ "$total" -eq 500 ] && [ "$bad" -eq 0 ]
+
       - name: Upload CSV artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: results-${{ matrix.impl }}
           path: generated_results.csv
+          if-no-files-found: error
